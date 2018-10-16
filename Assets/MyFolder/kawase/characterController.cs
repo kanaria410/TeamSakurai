@@ -8,7 +8,7 @@ public class characterController : MonoBehaviour {
     private int jumpcount;           //ジャンブした回数をカウント
     public Rigidbody rb;             //body獲得      
     public float jumpPower;          //ジャンプ力
-    public float speed;       //移動スピード
+    public float speed;              //移動スピード
     private float x;         
 
     void Start()
@@ -30,7 +30,7 @@ public class characterController : MonoBehaviour {
     {
         //if (Input.GetKey("right"))
         //{
-        //    //transform.position += transform.right * speed * Time.deltaTime;
+        //    transform.position += transform.right * speed * Time.deltaTime;
         //    Debug.Log("右に動く");
         //}
 
@@ -38,10 +38,11 @@ public class characterController : MonoBehaviour {
         //{
         //    transform.position -= transform.right * speed * Time.deltaTime;
         //    Debug.Log("左に動く");
-        //}
-        x = Input.GetAxis("horizontal");
+        //
+        x = Input.GetAxis("Horizontral");
 
-         Jump();
+        rb.velocity = new Vector3(z * speed, 0);
+        Jump();
  
     }
     private void OnCollisionEnter(Collision collision)
