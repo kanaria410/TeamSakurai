@@ -57,7 +57,7 @@ public class PlayerController : MonoBehaviour
     private void OnTriggerStay(Collider other)
     {
         //超仮の攻撃
-        if (other.gameObject.tag == "Player" && Input.GetKeyDown(KeyCode.Return))
+        if (other.gameObject.tag != "Ground" && Input.GetKeyDown(KeyCode.Return))
         {
             //衝突してきたオブジェクトのリジッドボディを取得
             Rigidbody rigid = other.gameObject.GetComponent<Rigidbody>();
