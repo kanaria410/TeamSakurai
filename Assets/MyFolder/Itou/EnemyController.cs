@@ -110,14 +110,14 @@ public class EnemyController : MonoBehaviour
         //自身についているRigidbodyを取得
         rigid = GetComponent<Rigidbody>();
 
-        //自身についているセンサーを取得
-        for (int i = 0; i < sensorNumbar; i++)
-        {
-            //子オブジェクトを上から順に取得
-            sensor[i] = transform.GetChild(i).gameObject;
+        ////自身についているセンサーを取得
+        //for (int i = 0; i < sensorNumbar; i++)
+        //{
+        //    //子オブジェクトを上から順に取得
+        //    sensor[i] = transform.GetChild(i).gameObject;
 
-            sensorFlag[i] = false;  //fakseで初期化
-        }
+        //    sensorFlag[i] = false;  //fakseで初期化
+        //}
 
         //初期化
         state = 0;
@@ -179,11 +179,11 @@ public class EnemyController : MonoBehaviour
             //}
         }
 
-        //センサーが地面に触れてるかどうかを調べる
-        for (int i = 0; i < sensorNumbar; i++)
-        {
-            sensorFlag[i] = sensor[i].GetComponent<SensorMove>().Get_HitFlag;
-        }
+        ////センサーが地面に触れてるかどうかを調べる
+        //for (int i = 0; i < sensorNumbar; i++)
+        //{
+        //    sensorFlag[i] = sensor[i].GetComponent<SensorMove>().Get_HitFlag;
+        //}
     }
 
     private void OnTriggerStay(Collider other)
