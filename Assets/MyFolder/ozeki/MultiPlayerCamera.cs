@@ -4,27 +4,25 @@ using UnityEngine;
 
 public class MultiPlayerCamera : MonoBehaviour
 {
+    //public Camera cam;
+    //public GameObject[] target;
+
     public Camera cam;
     public List<Transform> targets;
-
 
     public Vector3 offset;
     public float smoothTime = 0.5f;
 
-
-    public float minZoom = 40;
-    public float maxZoom = 20;
+    public float minZoom = 50;
+    public float maxZoom = 10;
     public float zoomLimiter = 50;
-
 
     private Vector3 velocity;
 
-
-    private  void Reset()
+    private void Reset()
     {
         cam = GetComponent<Camera>();
     }
-
 
     private void LateUpdate()
     {
@@ -33,14 +31,12 @@ public class MultiPlayerCamera : MonoBehaviour
         Move();
         Zoom();
     }
-
-
+    
     private void Zoom()
     {
         var newZoom = Mathf.Lerp(maxZoom, minZoom, GetGreatestDistance() / zoomLimiter);
         cam.fieldOfView = Mathf.Lerp(cam.fieldOfView, newZoom, Time.deltaTime);
     }
-
 
     private void Move()
     {
@@ -48,7 +44,6 @@ public class MultiPlayerCamera : MonoBehaviour
         var newPosition = centerPoint + offset;
         transform.position = Vector3.SmoothDamp(transform.position, newPosition, ref velocity, smoothTime);
     }
-
 
     private float GetGreatestDistance()
     {
@@ -60,7 +55,6 @@ public class MultiPlayerCamera : MonoBehaviour
         return bounds.size.x;
     }
 
-
     private Vector3 GetCenterPoint()
     {
         if (targets.Count == 1) return targets[0].position;
@@ -70,5 +64,18 @@ public class MultiPlayerCamera : MonoBehaviour
             bounds.Encapsulate(targets[i].position);
         }
         return bounds.center;
+    }
+    
+
+    private void Start()
+    {
+        if (transform.position.y < -10)
+        {
+            targets.RemoveAt(1);
+        }
+    }
+    private void Update()
+    {
+        
     }
 }
