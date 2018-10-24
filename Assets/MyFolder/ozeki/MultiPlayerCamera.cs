@@ -4,8 +4,7 @@ using UnityEngine;
 
 public class MultiPlayerCamera : MonoBehaviour
 {
-    //public Camera cam;
-    //public GameObject[] target;
+    [SerializeField, Range(0, 1)] float manzi;
 
     public Camera cam;
     public List<Transform> targets;
@@ -17,7 +16,14 @@ public class MultiPlayerCamera : MonoBehaviour
     public float maxZoom = 10;
     public float zoomLimiter = 50;
 
+    bool ifMoveFlag;
+
     private Vector3 velocity;
+
+    public void SetTargets(Transform trans)
+    {
+        targets.Add(trans);
+    }
 
     private void Reset()
     {
@@ -69,13 +75,18 @@ public class MultiPlayerCamera : MonoBehaviour
 
     private void Start()
     {
-        if (transform.position.y < -10)
-        {
-            targets.RemoveAt(1);
-        }
+        ifMoveFlag = true;
+
+        
     }
     private void Update()
     {
-        
+        for(int i = 0; i < targets.Count; i++)
+        {
+            if (targets[i].position.y < -10)
+            {
+                targets.Remove(targets[i]);
+            }
+        }
     }
 }
