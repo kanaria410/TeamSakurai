@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class EnemyController : MonoBehaviour
 {
@@ -12,27 +13,59 @@ public class EnemyController : MonoBehaviour
     float speed;                //スピード
     [SerializeField, Header("どれくらい距離をとるか")]
     float targetOfDistance;
+    [SerializeField, Header("Rayの長さ")]
+    float distance = 1.0f;      //Rayの長さ
     bool attakFlag;             //攻撃をしていいかダメかを判断するフラグ
     Vector3 dis;                //差
     Rigidbody rigid;            //リジッドボディ
     GameObject target;          //攻撃対象
     GameObject[] sensor = new GameObject[sensorNumbar];     //0が右　1が左のセンサー
     bool[] sensorFlag = new bool[sensorNumbar];             //センサーが検知した情報を得る
-   
-    const int 
+
+    const int
         IDLE = 1,
         WALK = 2,
         BACK = 3,
+        ATTACK = 4,
         END = 100;  //いちいちセミコロン書くのがめんどくさかったのでENDという謎めいたものを作成
+
+    void RayMove()
+    {
+        Vector3 vector3 = new Vector3(0.0f, 0.0f, 0.0f);
+
+        //Rayの作成　　　　　　　↓Rayを飛ばす原点　　　↓Rayを飛ばす方向
+        Ray ray = new Ray(transform.position, vector3);
+
+        //Rayが当たったオブジェクトの情報を入れる箱
+        RaycastHit hit;
+
+        //もしRayにオブジェクトが衝突したら
+        //                  ↓Ray  ↓Rayが当たったオブジェクト ↓距離
+        if (Physics.Raycast(ray, out hit, distance))
+        {
+            if (hit.collider.gameObject.tag == "Player")
+            {
+                Debug.LogError("プレイヤーにあたった");
+            }
+        }
+
+        Color red = Color.red;
+        float time = 0.0f;
+        Debug.DrawRay(transform.position, ray.direction, red , time, true);
+    }
+
 
     //待機
     void Idle()
     {
+        //何フレーム待機するか
+        int frame = 10;
+
         //30フレーム経過したら歩き始める
-        if (frameCount[IDLE] > 30)
+        if (frameCount[IDLE] > frame)
         {
             state = WALK;
-            frameCount[IDLE] = 0;
+            frameCount[IDLE] = 0;   //リセット
         }
 
         frameCount[IDLE]++;
@@ -59,7 +92,7 @@ public class EnemyController : MonoBehaviour
             //抽選をした値が３未満だったら待機モードに移行
             if (random < randomMax)
             {
-                state = IDLE;
+                state = BACK;
             }
         }
 
@@ -83,6 +116,14 @@ public class EnemyController : MonoBehaviour
         //プレイヤーと自分の距離の差を計算
         dis = transform.position - target.transform.position;
 
+        int frame = Random.Range(10, 20);
+
+        if (frameCount[BACK] > frame)
+        {
+            state = IDLE;
+            frameCount[BACK] = 0;
+        }
+
         //後ずさる
         if (dis.x > 0)
         {
@@ -92,6 +133,38 @@ public class EnemyController : MonoBehaviour
         {
             transform.position -= transform.right * speed * Time.deltaTime;
         }
+
+        frameCount[BACK]++;
+    }
+
+    void Attack()
+    {
+        int frame = 30;
+
+        if (frameCount[ATTACK] > frame)
+        {
+            Rigidbody rigid = target.GetComponent<Rigidbody>();
+
+            Vector3 dis = target.transform.position - transform.position;
+
+            Vector3 force;
+
+            if (dis.x > 0)
+            {
+                force = new Vector3(10.0f, 10.0f, 0);
+            }
+            else
+            {
+                force = new Vector3(-10.0f, 10.0f, 0);
+            }
+
+            //飛ばす
+            rigid.AddForce(force, ForceMode.Impulse);
+
+            frameCount[ATTACK] = 0;
+        }
+
+        frameCount[ATTACK]++;
     }
 
     void Jump()
@@ -133,14 +206,20 @@ public class EnemyController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+
     }
 
     void FixedUpdate()
     {
+        RayMove();
+
+        if (Input.GetMouseButtonDown(0))
+        {
+            SceneManager.LoadScene("Test_AI");
+        }
+
         if (target != null)
         {
-
             //ステートマシーン
             switch (state)
             {
@@ -156,6 +235,10 @@ public class EnemyController : MonoBehaviour
                     Back();
                     Debug.Log("後ずさり中");
                     break;
+                case 4:
+                    Attack();
+                    Debug.Log("攻撃");
+                    break;
                 default:
                     //待機状態
                     state = IDLE;
@@ -166,7 +249,7 @@ public class EnemyController : MonoBehaviour
         {
             ////ターゲットを再取得
             //target = GameObject.FindWithTag("Player");
-            
+
             ////安定の無限ループ
             //while(target.name == gameObject.name)
             //{
@@ -188,25 +271,18 @@ public class EnemyController : MonoBehaviour
 
     private void OnTriggerStay(Collider other)
     {
-        if (other.gameObject.tag == "Player" && Time.frameCount % 30 == 0)
+        if (other.gameObject.tag == "Player")
         {
-            Rigidbody rigid = other.gameObject.GetComponent<Rigidbody>();
+            state = ATTACK;
+        }
+    }
 
-            Vector3 dis = other.gameObject.transform.position - transform.position;
-
-            Vector3 force;
-
-            if (dis.x > 0)
-            {
-                force = new Vector3(10.0f, 10.0f, 0);
-            }
-            else
-            {
-                force = new Vector3(-10.0f, 10.0f, 0);
-            }
-
-            //飛ばす
-            rigid.AddForce(force, ForceMode.Impulse);
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.gameObject.tag == "Player")
+        {
+            state = IDLE;
+            frameCount[ATTACK] = 0;
         }
     }
 }
