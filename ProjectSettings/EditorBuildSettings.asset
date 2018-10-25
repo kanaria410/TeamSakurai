@@ -5,7 +5,16 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/SampleScene.unity
     guid: 99c9720ab356a0642a771bea13969a05
+  - enabled: 0
+    path: Assets/MyFolder/itou/Test_AI.unity
+    guid: 2650afe0ebbc02d45a8f4097f76c54b4
+  - enabled: 1
+    path: Assets/MyFolder/itou/Test_GameMove/Test_SelectScene.unity
+    guid: 21dd5d20394656740ae32e5e9e799ac2
+  - enabled: 1
+    path: Assets/MyFolder/itou/Test_GameMove/Test_GameScene.unity
+    guid: d8fe19e78208e5b4ebd31e216cc7bda7
   m_configObjects: {}
