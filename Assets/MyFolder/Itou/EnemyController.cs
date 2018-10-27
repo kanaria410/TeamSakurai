@@ -9,16 +9,18 @@ public class EnemyController : MonoBehaviour
     int state;                  //状態
     int[] frameCount = new int[10]; //何フレーム経ったか　要素数は適当に多く取っただけです
     int jumpCount;              //何回ジャンプしたか
+    int key;                    //方向転換に使う
     [SerializeField, Header("スピ―ド")]
     float speed;                //スピード
     [SerializeField, Header("どれくらい距離をとるか")]
     float targetOfDistance;
     [SerializeField, Header("Rayの長さ")]
-    float distance = 1.0f;      //Rayの長さ
+    float distance;             //Rayの長さ
     bool attakFlag;             //攻撃をしていいかダメかを判断するフラグ
     Vector3 dis;                //差
     Rigidbody rigid;            //リジッドボディ
     GameObject target;          //攻撃対象
+
     GameObject[] sensor = new GameObject[sensorNumbar];     //0が右　1が左のセンサー
     bool[] sensorFlag = new bool[sensorNumbar];             //センサーが検知した情報を得る
 
@@ -31,10 +33,12 @@ public class EnemyController : MonoBehaviour
 
     void RayMove()
     {
-        Vector3 vector3 = new Vector3(0.0f, 0.0f, 0.0f);
+        Vector3 angle = new Vector3(90, -90, 0);
+        Vector3 angle_ = new Vector3(-90, -90, 0);
 
         //Rayの作成　　　　　　　↓Rayを飛ばす原点　　　↓Rayを飛ばす方向
-        Ray ray = new Ray(transform.position, vector3);
+        Ray ray = new Ray(transform.position, angle);
+        Ray ray_ = new Ray(transform.position, angle_);
 
         //Rayが当たったオブジェクトの情報を入れる箱
         RaycastHit hit;
@@ -43,15 +47,17 @@ public class EnemyController : MonoBehaviour
         //                  ↓Ray  ↓Rayが当たったオブジェクト ↓距離
         if (Physics.Raycast(ray, out hit, distance))
         {
-            if (hit.collider.gameObject.tag == "Player")
+            if(hit.collider.gameObject.tag != gameObject.tag 
+                && hit.collider.gameObject.tag != "Player")
             {
-                Debug.LogError("プレイヤーにあたった");
+                Debug.LogError(hit.collider.gameObject.name);
             }
         }
 
         Color red = Color.red;
         float time = 0.0f;
-        Debug.DrawRay(transform.position, ray.direction, red , time, true);
+        Debug.DrawRay(transform.position, ray.direction * distance, red, time, true);
+        Debug.DrawRay(transform.position, ray_.direction * distance, red, time, true);
     }
 
 
@@ -99,11 +105,13 @@ public class EnemyController : MonoBehaviour
         //移動
         if (dis.x > 0)
         {
-            transform.position -= transform.right * speed * Time.deltaTime;
+            rigid.AddForce(Vector3.left * speed, ForceMode.Acceleration);
+            key = -1;
         }
         else
         {
-            transform.position += transform.right * speed * Time.deltaTime;
+            rigid.AddForce(Vector3.right * speed, ForceMode.Acceleration);
+            key = 1;           
         }
 
         //フレームカウンターをインクリメント
@@ -127,11 +135,11 @@ public class EnemyController : MonoBehaviour
         //後ずさる
         if (dis.x > 0)
         {
-            transform.position += transform.right * speed * Time.deltaTime;
+            rigid.AddForce(Vector3.left * speed, ForceMode.Acceleration);
         }
         else
         {
-            transform.position -= transform.right * speed * Time.deltaTime;
+            rigid.AddForce(Vector3.right * speed, ForceMode.Acceleration);
         }
 
         frameCount[BACK]++;
@@ -203,12 +211,6 @@ public class EnemyController : MonoBehaviour
         }
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
-
     void FixedUpdate()
     {
         RayMove();
@@ -220,6 +222,12 @@ public class EnemyController : MonoBehaviour
 
         if (target != null)
         {
+            //動く方向に応じて反転
+            if (key != 0)
+            {
+                transform.localScale = new Vector3(key, 1, 1);
+            }
+
             //ステートマシーン
             switch (state)
             {
