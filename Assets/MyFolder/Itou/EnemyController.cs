@@ -15,7 +15,6 @@ public class EnemyController : MonoBehaviour
     [SerializeField, Header("どれくらい距離をとるか")]
     float targetOfDistance;
     bool[] stateFlag = new bool[arrayLength];    //各ステート内で使うフラグ
-    bool attakFlag;             //攻撃をしていいかダメかを判断するフラグ
     Vector3 dis;                //差
     Rigidbody rigid;            //リジッドボディ
     GameObject target;          //攻撃対象
