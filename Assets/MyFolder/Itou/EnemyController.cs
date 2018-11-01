@@ -5,25 +5,22 @@ using UnityEngine.SceneManagement;
 
 public class EnemyController : MonoBehaviour
 {
-    const int sensorNumbar = 2; //自身についているセンサーの数
+    const int arrayLength = 10; //配列の長さ　10は適当に少し多く取っただけです
     int state;                  //状態
-    int[] frameCount = new int[10]; //何フレーム経ったか　要素数は適当に多く取っただけです
+    int[] frameCount = new int[arrayLength]; //何フレーム経ったか
     int jumpCount;              //何回ジャンプしたか
     int key;                    //方向転換に使う
     [SerializeField, Header("スピ―ド")]
     float speed;                //スピード
     [SerializeField, Header("どれくらい距離をとるか")]
     float targetOfDistance;
-    [SerializeField, Header("Rayの長さ")]
-    float distance;             //Rayの長さ
+    bool[] stateFlag = new bool[arrayLength];    //各ステート内で使うフラグ
     bool attakFlag;             //攻撃をしていいかダメかを判断するフラグ
     Vector3 dis;                //差
     Rigidbody rigid;            //リジッドボディ
     GameObject target;          //攻撃対象
 
-    GameObject[] sensor = new GameObject[sensorNumbar];     //0が右　1が左のセンサー
-    bool[] sensorFlag = new bool[sensorNumbar];             //センサーが検知した情報を得る
-
+    //状態を表している変数たち
     const int
         IDLE = 1,
         WALK = 2,
@@ -31,49 +28,20 @@ public class EnemyController : MonoBehaviour
         ATTACK = 4,
         END = 100;  //いちいちセミコロン書くのがめんどくさかったのでENDという謎めいたものを作成
 
-    void RayMove()
-    {
-        Vector3 angle = new Vector3(90, -90, 0);
-        Vector3 angle_ = new Vector3(-90, -90, 0);
-
-        //Rayの作成　　　　　　　↓Rayを飛ばす原点　　　↓Rayを飛ばす方向
-        Ray ray = new Ray(transform.position, angle);
-        Ray ray_ = new Ray(transform.position, angle_);
-
-        //Rayが当たったオブジェクトの情報を入れる箱
-        RaycastHit hit;
-
-        //もしRayにオブジェクトが衝突したら
-        //                  ↓Ray  ↓Rayが当たったオブジェクト ↓距離
-        if (Physics.Raycast(ray, out hit, distance))
-        {
-            if(hit.collider.gameObject.tag != gameObject.tag 
-                && hit.collider.gameObject.tag != "Player")
-            {
-                Debug.LogError(hit.collider.gameObject.name);
-            }
-        }
-
-        Color red = Color.red;
-        float time = 0.0f;
-        Debug.DrawRay(transform.position, ray.direction * distance, red, time, true);
-        Debug.DrawRay(transform.position, ray_.direction * distance, red, time, true);
-    }
-
-
     //待機
     void Idle()
     {
         //何フレーム待機するか
-        int frame = 10;
+        int frame = 0;
 
-        //30フレーム経過したら歩き始める
+        //frameで設定したフレーム数経過したら歩き始める
         if (frameCount[IDLE] > frame)
         {
             state = WALK;
             frameCount[IDLE] = 0;   //リセット
         }
 
+        //カウンターをインクリメント
         frameCount[IDLE]++;
     }
 
@@ -92,26 +60,40 @@ public class EnemyController : MonoBehaviour
             //抽選をする
             int random = Random.Range(0, 10);
 
-            //この値以下なら待機モードに移行
+            //この値未満なら待機モードに移行
             int randomMax = 3;
 
-            //抽選をした値が３未満だったら待機モードに移行
+            //抽選をした値がrandomMax未満だったら待機モードに移行
             if (random < randomMax)
             {
                 state = BACK;
             }
         }
 
-        //移動
-        if (dis.x > 0)
+        //加速度が一定以上になったら止まる
+        if (Mathf.Abs(rigid.velocity.x) >= 4)
         {
-            rigid.AddForce(Vector3.left * speed, ForceMode.Acceleration);
-            key = -1;
+            //state = IDLE;
+            stateFlag[WALK] = false;
         }
         else
         {
-            rigid.AddForce(Vector3.right * speed, ForceMode.Acceleration);
-            key = 1;           
+            stateFlag[WALK] = true;
+        }
+
+        if (stateFlag[WALK])
+        {
+            //移動
+            if (dis.x > 0)
+            {
+                rigid.AddForce(Vector3.left * speed, ForceMode.Acceleration);
+                key = -1;
+            }
+            else
+            {
+                rigid.AddForce(Vector3.right * speed, ForceMode.Acceleration);
+                key = 1;
+            }
         }
 
         //フレームカウンターをインクリメント
@@ -124,16 +106,18 @@ public class EnemyController : MonoBehaviour
         //プレイヤーと自分の距離の差を計算
         dis = transform.position - target.transform.position;
 
+        //適当にランダムな値を取得
         int frame = Random.Range(10, 20);
 
+        //ランダムに決まった値より経過したフレームが大きいならIDLEに移行
         if (frameCount[BACK] > frame)
         {
             state = IDLE;
-            frameCount[BACK] = 0;
+            frameCount[BACK] = 0;   //フレームカウンターをリセット
         }
 
         //後ずさる
-        if (dis.x > 0)
+        if (dis.x > 0)  
         {
             rigid.AddForce(Vector3.left * speed, ForceMode.Acceleration);
         }
@@ -142,13 +126,17 @@ public class EnemyController : MonoBehaviour
             rigid.AddForce(Vector3.right * speed, ForceMode.Acceleration);
         }
 
+        //カウンターをインクリメント
         frameCount[BACK]++;
     }
 
+    //攻撃
     void Attack()
     {
+        //敵が攻撃範囲に入ってきてから何フレーム攻撃しないか
         int frame = 30;
 
+        //指定したフレーム数を超えたら攻撃
         if (frameCount[ATTACK] > frame)
         {
             Rigidbody rigid = target.GetComponent<Rigidbody>();
@@ -175,6 +163,7 @@ public class EnemyController : MonoBehaviour
         frameCount[ATTACK]++;
     }
 
+    //ジャンプ
     void Jump()
     {
         float jumpPower = 10.0f;
@@ -191,35 +180,26 @@ public class EnemyController : MonoBehaviour
         //自身についているRigidbodyを取得
         rigid = GetComponent<Rigidbody>();
 
-        ////自身についているセンサーを取得
-        //for (int i = 0; i < sensorNumbar; i++)
-        //{
-        //    //子オブジェクトを上から順に取得
-        //    sensor[i] = transform.GetChild(i).gameObject;
-
-        //    sensorFlag[i] = false;  //fakseで初期化
-        //}
-
         //初期化
-        state = 0;
+        state = IDLE;
         jumpCount = 0;
 
-        //初期化
-        for (int i = 0; i < frameCount.Length; i++)
+        //配列を初期化
+        for (int i = 0; i < arrayLength; i++)
         {
             frameCount[i] = 0;
+            stateFlag[i] = false;
         }
     }
 
     void FixedUpdate()
     {
-        RayMove();
-
         if (Input.GetMouseButtonDown(0))
         {
             SceneManager.LoadScene("Test_AI");
         }
 
+        //ターゲットがいるとき
         if (target != null)
         {
             //動く方向に応じて反転
@@ -253,32 +233,11 @@ public class EnemyController : MonoBehaviour
                     break;
             }
         }
-        else
-        {
-            ////ターゲットを再取得
-            //target = GameObject.FindWithTag("Player");
-
-            ////安定の無限ループ
-            //while(target.name == gameObject.name)
-            //{
-            //    target = GameObject.FindWithTag("Player");
-            //}
-
-            //if (target == null)
-            //{
-            //    Debug.Log("(´･ω･｀)");
-            //}
-        }
-
-        ////センサーが地面に触れてるかどうかを調べる
-        //for (int i = 0; i < sensorNumbar; i++)
-        //{
-        //    sensorFlag[i] = sensor[i].GetComponent<SensorMove>().Get_HitFlag;
-        //}
     }
 
     private void OnTriggerStay(Collider other)
     {
+        //攻撃範囲にプレイヤが入ってきたら攻撃状態に移行
         if (other.gameObject.tag == "Player")
         {
             state = ATTACK;
@@ -287,6 +246,7 @@ public class EnemyController : MonoBehaviour
 
     private void OnTriggerExit(Collider other)
     {
+        //プレイヤが攻撃範囲から出た場合、IDLE状態に移行
         if (other.gameObject.tag == "Player")
         {
             state = IDLE;
