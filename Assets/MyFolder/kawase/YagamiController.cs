@@ -49,7 +49,7 @@ public class YagamiController : MonoBehaviour
         {
             rb.AddForce(Vector3.right * speed, ForceMode.Acceleration);
             key = 1;
-         }
+        }
 
         if (Input.GetKey("left"))
         {
@@ -57,7 +57,7 @@ public class YagamiController : MonoBehaviour
             key = -1;
 
         }
-        
+
         //動く方向に応じて反転
         if (key != 0)
          {
@@ -95,8 +95,8 @@ public class YagamiController : MonoBehaviour
             Debug.Log("Neutral");
         }
 
-        if (Input.GetKey("q") && Input.GetKeyDown("")
-         || Input.GetKey("q")&& Input.GetKeyDown(""))
+        if (Input.GetKey("q") && Input.GetKeyDown("right")
+         || Input.GetKey("q") && Input.GetKeyDown("left"))
         {
             Debug.Log("左右派生");
         }
