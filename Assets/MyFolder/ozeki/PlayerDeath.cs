@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PlayeDath : MonoBehaviour {
+public class PlayerDeath : MonoBehaviour
+{
 
     Renderer rend;
     Color col;
@@ -30,7 +31,7 @@ public class PlayeDath : MonoBehaviour {
     // Update is called once per frame
     void Update()
     {
-        rend.material.color = new Color(alpha, col.g, col.b,0);
+        rend.material.color = new Color(alpha, col.g, col.b, 0);
 
         if (transform.position.y < -20)
         {
