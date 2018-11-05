@@ -24,7 +24,7 @@ public class YagamiController : MonoBehaviour
 
     void Jump()
     {
-        if (Input.GetKeyDown("x") && jumpcount < 2)
+        if (Input.GetButtonDown("Jump") && jumpcount < 2)
         {
             rb.AddForce(new Vector3(0, jumpPower * 45.0f, 0));
             gameObject.layer = LayerMask.NameToLayer("Jump");
@@ -45,14 +45,16 @@ public class YagamiController : MonoBehaviour
     void CharacterMove()
     {
         //キャラ移動
-        if (Input.GetKey("right"))
+        if (Input.GetButton("right"))
         {
+            Debug.Log("ああああ");
             rb.AddForce(Vector3.right * speed, ForceMode.Acceleration);
             key = 1;
         }
 
-        if (Input.GetKey("left"))
+        if (Input.GetButton("left"))
         {
+            Debug.Log("aaaaa");
             rb.AddForce(Vector3.left * speed, ForceMode.Acceleration);
             key = -1;
 
@@ -65,9 +67,15 @@ public class YagamiController : MonoBehaviour
          }
         
         //ここら辺に回避
-        if (Input.GetKeyDown("e"))
+        if (Input.GetButton("Avoidance"))
         {
             Debug.Log("(ﾟ∀ﾟ)");
+        }
+
+        //ガード
+        if (Input.GetButton("Guard"))
+        {
+            Debug.Log("( *´艸｀)");
         }
     }
 
@@ -75,42 +83,48 @@ public class YagamiController : MonoBehaviour
     void CharacterAttack()
     {
         //以下通常攻撃
-        if (Input.GetKeyDown("a"))//□弱攻撃
+        if (Input.GetButtonDown("Punch1"))//□弱攻撃
         {
             Debug.Log("(´･ω･`)");
         }
 
-        if (Input.GetKeyDown("w"))//△強攻撃
+        if (Input.GetButtonDown("Punch2"))//△強攻撃
         {
             Debug.Log("(*´ω｀*)");
         }
 
-        if (Input.GetKeyDown("d"))//〇スマッシュ
+        if (Input.GetButtonDown("Smash"))//〇スマッシュ
         {
             Debug.Log("(#ﾟДﾟ)ｺﾞﾗｧ!!!!");
         }
         //以下派生攻撃
-        if (Input.GetKeyDown("q"))
+        if (Input.GetButtonDown("Deathblow"))
         {
             Debug.Log("Neutral");
         }
 
-        if (Input.GetKey("q") && Input.GetKeyDown("right")
-         || Input.GetKey("q") && Input.GetKeyDown("left"))
+        if (Input.GetButton("Deathblow") && Input.GetButton("right")
+         || Input.GetButton("Deathblow") && Input.GetButton("left"))
         {
             Debug.Log("左右派生");
         }
 
 
-        if (Input.GetKey("q") && Input.GetKeyDown("up"))
+        if (Input.GetButton("Deathblow") && Input.GetKeyDown("up"))
         {
             Debug.Log("上派生");
 
         }
 
-        if (Input.GetKey("q") && Input.GetKeyDown("down"))
+        if (Input.GetButton("Deathblow") && Input.GetKeyDown("down"))
         {
             Debug.Log("下派生");
+        }
+
+        //覚醒
+        if (Input.GetButtonDown("Awakening"))
+        {
+            Debug.Log("(｀・ω・´)");
         }
     }
 
