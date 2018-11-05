@@ -10,22 +10,94 @@ public class EnemyController : MonoBehaviour
     int[] frameCount = new int[arrayLength]; //何フレーム経ったか
     int jumpCount;              //何回ジャンプしたか
     int key;                    //方向転換に使う
-    [SerializeField, Header("スピ―ド")]
+    int rayFrameCount;
+    int rayMoveFrameCount;
+    [SerializeField, Header("Rayの長さ")]
+    int distance;
+    [SerializeField, Header("スピード")]
     float speed;                //スピード
-    [SerializeField, Header("どれくらい距離をとるか")]
-    float targetOfDistance;
     bool[] stateFlag = new bool[arrayLength];    //各ステート内で使うフラグ
+    bool moveFlag;
+    bool rayMoveFlag;
+    bool turnaroundFlag;        //Turnaround：振り向く
     Vector3 dis;                //差
     Rigidbody rigid;            //リジッドボディ
     GameObject target;          //攻撃対象
 
     //状態を表している変数たち
     const int
-        IDLE = 1,
-        WALK = 2,
-        BACK = 3,
-        ATTACK = 4,
+        IDLE = 1,   //通常
+        WALK = 2,   //歩く
+        BACK = 3,   //後ずさる
+        ATTACK = 4, //攻撃
+        JUMP = 5,
         END = 100;  //いちいちセミコロン書くのがめんどくさかったのでENDという謎めいたものを作成
+
+    void RayMove()
+    {
+        //Rayの作成　　　　　　　↓Rayを飛ばす原点　　　↓Rayを飛ばす方向
+        Ray rayRight = new Ray(transform.position, new Vector3(90, -180, 0));
+        Ray rayLeft = new Ray(transform.position, new Vector3(-90, -180, 0));
+
+        //Rayが当たったオブジェクトの情報を入れる箱
+        RaycastHit rightHit;
+        RaycastHit leftHit;
+
+        if (rayMoveFlag)
+        {
+            //右のRay
+            if (!Physics.Raycast(rayRight, out rightHit, distance))
+            {
+                moveFlag = false;
+                rayMoveFlag = false;
+            }
+           
+            //左のRay
+            if (!Physics.Raycast(rayLeft, out leftHit, distance))
+            {
+                moveFlag = false;
+                rayMoveFlag = false;
+            }
+        }
+        else
+        {
+            if (rayMoveFrameCount > 60)
+            {
+                moveFlag = true;
+                rayMoveFlag = true;
+                rayMoveFrameCount = 0;
+            }         
+
+            //一度だけ方向転換
+            if (turnaroundFlag && key == 1)
+            {
+                key = -1;
+                turnaroundFlag = false;
+            }
+            else if(turnaroundFlag && key ==- 1)
+            {
+                key = 1;
+                turnaroundFlag = false;
+            }
+
+            //移動
+            if (key == 1)
+            {
+                rigid.AddForce(Vector3.right * speed, ForceMode.Acceleration);
+            }
+            else
+            {
+                rigid.AddForce(Vector3.left * speed, ForceMode.Acceleration);
+            }
+
+            //フレームをカウント
+            rayMoveFrameCount++;
+        }
+
+        //Rayを可視化
+        //Debug.DrawRay(rayRight.origin, rayRight.direction * distance, Color.red, 0, true);
+        //Debug.DrawRay(rayLeft.origin, rayLeft.direction * distance, Color.red, 0, true);
+    }
 
     //待機
     void Idle()
@@ -60,27 +132,18 @@ public class EnemyController : MonoBehaviour
             int random = Random.Range(0, 10);
 
             //この値未満なら待機モードに移行
-            int randomMax = 3;
+            int randomMax = 100;
 
             //抽選をした値がrandomMax未満だったら待機モードに移行
             if (random < randomMax)
             {
-                state = BACK;
+                state = JUMP;
+                //state = BACK;
             }
         }
 
         //加速度が一定以上になったら止まる
-        if (Mathf.Abs(rigid.velocity.x) >= 4)
-        {
-            //state = IDLE;
-            stateFlag[WALK] = false;
-        }
-        else
-        {
-            stateFlag[WALK] = true;
-        }
-
-        if (stateFlag[WALK])
+        if (Mathf.Abs(rigid.velocity.x) <= 4)
         {
             //移動
             if (dis.x > 0)
@@ -106,7 +169,7 @@ public class EnemyController : MonoBehaviour
         dis = transform.position - target.transform.position;
 
         //適当にランダムな値を取得
-        int frame = Random.Range(10, 20);
+        int frame = Random.Range(20, 30);
 
         //ランダムに決まった値より経過したフレームが大きいならIDLEに移行
         if (frameCount[BACK] > frame)
@@ -116,14 +179,16 @@ public class EnemyController : MonoBehaviour
         }
 
         //後ずさる
-        if (dis.x > 0)  
-        {
-            rigid.AddForce(Vector3.left * speed, ForceMode.Acceleration);
-        }
-        else
-        {
-            rigid.AddForce(Vector3.right * speed, ForceMode.Acceleration);
-        }
+        //if (dis.x > 0)  
+        //{
+        //    rigid.AddForce(-Vector3.left * speed, ForceMode.Acceleration);
+        //    key = 1;
+        //}
+        //else
+        //{
+        //    rigid.AddForce(-Vector3.right * speed, ForceMode.Acceleration);
+        //    key = -1;
+        //}
 
         //カウンターをインクリメント
         frameCount[BACK]++;
@@ -165,9 +230,11 @@ public class EnemyController : MonoBehaviour
     //ジャンプ
     void Jump()
     {
+        rayMoveFlag = false;
         float jumpPower = 10.0f;
         rigid.AddForce(new Vector3(0, jumpPower * 45.0f, 0));
         jumpCount++;
+        state = IDLE;
     }
 
     // Use this for initialization
@@ -182,6 +249,11 @@ public class EnemyController : MonoBehaviour
         //初期化
         state = IDLE;
         jumpCount = 0;
+        moveFlag = true;
+        rayMoveFlag = true;
+        turnaroundFlag = true;
+        rayFrameCount = 0;
+        rayMoveFrameCount = 0;
 
         //配列を初期化
         for (int i = 0; i < arrayLength; i++)
@@ -193,20 +265,22 @@ public class EnemyController : MonoBehaviour
 
     void FixedUpdate()
     {
+        RayMove();
+
         if (Input.GetMouseButtonDown(0))
         {
             SceneManager.LoadScene("Test_AI");
         }
 
-        //ターゲットがいるとき
-        if (target != null)
+        //動く方向に応じて反転
+        if (key != 0)
         {
-            //動く方向に応じて反転
-            if (key != 0)
-            {
-                transform.localScale = new Vector3(key, 1, 1);
-            }
+            transform.localScale = new Vector3(key, 1, 1);
+        }
 
+        //ターゲットがいるとき
+        if (target != null && moveFlag)
+        {
             //ステートマシーン
             switch (state)
             {
@@ -223,8 +297,12 @@ public class EnemyController : MonoBehaviour
                     Debug.Log("後ずさり中");
                     break;
                 case 4:
-                    Attack();
+                    //Attack();
                     Debug.Log("攻撃");
+                    break;
+                case 5:
+                    Jump();
+                    Debug.Log("線路へほっぴんじゃんぷ");
                     break;
                 default:
                     //待機状態
@@ -251,5 +329,12 @@ public class EnemyController : MonoBehaviour
             state = IDLE;
             frameCount[ATTACK] = 0;
         }
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        if(collision.gameObject.tag == "Ground")
+        jumpCount = 0;
+        rayMoveFlag = true;
     }
 }
