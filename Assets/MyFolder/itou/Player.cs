@@ -30,14 +30,14 @@ public class Player : MonoBehaviour
         //キャラ移動
         if (Input.GetKey("right"))
         {
-            Debug.Log("右に移動");
+            //Debug.Log("右に移動");
             rb.AddForce(Vector3.right * speed, ForceMode.Acceleration);
             key = 1;
         }
 
         if (Input.GetKey("left"))
         {
-            Debug.Log("左に移動");
+            //Debug.Log("左に移動");
             rb.AddForce(Vector3.left * speed, ForceMode.Acceleration);
             key = -1;
         }
@@ -99,7 +99,7 @@ public class Player : MonoBehaviour
         if (collision.gameObject.tag == "Ground")
         {
             jumpcount = 0;
-            Debug.Log("初期化済み");
+            //Debug.Log("初期化済み");
         }
     }
 }
