@@ -90,6 +90,8 @@ public class EnemyController : MonoBehaviour
                 rigid.AddForce(Vector3.left * speed, ForceMode.Acceleration);
             }
 
+            Debug.Log("ステートを無視して動く");
+
             //フレームをカウント
             rayMoveFrameCount++;
         }
@@ -103,11 +105,11 @@ public class EnemyController : MonoBehaviour
     void Idle()
     {
         //何フレーム待機するか
-        int frame = 0;
-
+        int frame = 20;
+        
         //frameで設定したフレーム数経過したら歩き始める
         if (frameCount[IDLE] > frame)
-        {
+        { 
             state = WALK;
             frameCount[IDLE] = 0;   //リセット
         }
@@ -123,7 +125,7 @@ public class EnemyController : MonoBehaviour
         dis = transform.position - target.transform.position;
 
         //30フレームたったら待機モードに入るための抽選をする
-        if (frameCount[WALK] >= 30)
+        if (frameCount[WALK] >= 60)
         {
             //カウンターをリセット
             frameCount[WALK] = 0;
@@ -132,18 +134,18 @@ public class EnemyController : MonoBehaviour
             int random = Random.Range(0, 10);
 
             //この値未満なら待機モードに移行
-            int randomMax = 100;
+            int randomMax = 2;
 
             //抽選をした値がrandomMax未満だったら待機モードに移行
             if (random < randomMax)
             {
-                state = JUMP;
+                state = IDLE;
                 //state = BACK;
             }
         }
 
         //加速度が一定以上になったら止まる
-        if (Mathf.Abs(rigid.velocity.x) <= 4)
+        if (Mathf.Abs(rigid.velocity.x) < 4)
         {
             //移動
             if (dis.x > 0)
@@ -230,6 +232,7 @@ public class EnemyController : MonoBehaviour
     //ジャンプ
     void Jump()
     {
+        if(jumpCount < 2)
         rayMoveFlag = false;
         float jumpPower = 10.0f;
         rigid.AddForce(new Vector3(0, jumpPower * 45.0f, 0));
@@ -263,9 +266,14 @@ public class EnemyController : MonoBehaviour
         }
     }
 
-    void FixedUpdate()
+    void　Update()
     {
         RayMove();
+
+        if (Input.GetKeyDown(KeyCode.Return))
+        {
+            Debug.LogError(state);
+        }
 
         if (Input.GetMouseButtonDown(0))
         {
