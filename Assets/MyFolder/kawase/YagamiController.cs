@@ -18,6 +18,8 @@ public class YagamiController : MonoBehaviour
     bool jumpOn;                    //ジャンプボタンが押されたか確認
     bool Awakening;                 //覚醒スイッチ
 
+    float x;                        //X軸の移動に使う
+
     void Start()
     {
     }
@@ -48,14 +50,14 @@ public class YagamiController : MonoBehaviour
         if (Input.GetButton("right"))
         {
             Debug.Log("ああああ");
-            rb.AddForce(Vector3.right * speed, ForceMode.Acceleration);
+            rb.AddForce(Vector3.right * speed, ForceMode.Force);
             key = 1;
         }
 
         if (Input.GetButton("left"))
         {
             Debug.Log("aaaaa");
-            rb.AddForce(Vector3.left * speed, ForceMode.Acceleration);
+            rb.AddForce(Vector3.left * speed, ForceMode.Force);
             key = -1;
 
         }
