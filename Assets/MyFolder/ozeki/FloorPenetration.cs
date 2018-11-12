@@ -4,24 +4,43 @@ using UnityEngine;
 
 public class FloorPenetration : MonoBehaviour
 {
-    bool ThroughFlag;
-    int frame;
-    int timer;
+    float BehaviorTime;
+    bool Behavior;
+
+
     // Use this for initialization
     void Start()
     {
-        frame = 0;
-
-        timer = 60;
+        StartCoroutine("BehaviorTime");
     }
-
     // Update is called once per frame
     void Update()
     {
-        if (frame < timer)
+        if (Input.GetKeyDown(KeyCode.W))
         {
-            ThroughFlag = false;
-
+            gameObject.layer = LayerMask.NameToLayer("Jump");
+            bool Behavior;
+        }
+        if (Behavior == true)
+        {
+            BehaviorTime += Time.deltaTime;
+        }
+        if (BehaviorTime >= 1)
+        {
+            gameObject.layer = LayerMask.NameToLayer("Nomal");
+        }
+        if (Input.GetKeyDown(KeyCode.S))
+        {
+            gameObject.layer = LayerMask.NameToLayer("GetOff");
+            bool Behavior;
+        }
+        if (Behavior == true)
+        {
+            BehaviorTime += Time.deltaTime;
+        }
+        if (BehaviorTime >= 1)
+        {
+            gameObject.layer = LayerMask.NameToLayer("Nomal");
         }
     }
 }

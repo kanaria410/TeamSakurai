@@ -37,7 +37,7 @@ public class PlayerDeath : MonoBehaviour
         {
             deathFlag = true;
             //Destroy(gameObject);
-            transform.position = new Vector3(9, 2, 0);
+            transform.position = new Vector3(9, 10, 0);
 
             camera.GetComponent<MultiPlayerCamera>().SetTargets(transform);
         }
