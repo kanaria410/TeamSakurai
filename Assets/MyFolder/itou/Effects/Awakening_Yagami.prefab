@@ -22,7 +22,7 @@ GameObject:
   - component: {fileID: 198009825823382636}
   - component: {fileID: 199270887810377580}
   m_Layer: 0
-  m_Name: Awakening
+  m_Name: Awakening_Yagami
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
