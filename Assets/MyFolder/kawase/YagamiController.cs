@@ -87,6 +87,13 @@ public class YagamiController : MonoBehaviour
             animetor.SetTrigger("GuardTrigger");
             Debug.Log("( *´艸｀)");
         }
+        else
+        {
+            if (Input.GetButtonUp("Guard"))
+            {
+                animetor.SetBool("isGuard", false);
+            }
+        }
 
     }
 
@@ -204,14 +211,14 @@ public class YagamiController : MonoBehaviour
         }
 
         //派生上
-        if (Input.GetButton("Deathblow") && Input.GetAxis("Vertical2") > 0)
+        if (Input.GetButton("Deathblow") && Input.GetAxis("Vertical2") < 0)
         {
             Debug.Log("上派生");
 
         }
 
         //派生下
-        if (Input.GetButton("Deathblow") && Input.GetAxis("Vertical2") < 0)
+        if (Input.GetButton("Deathblow") && Input.GetAxis("Vertical2") > 0)
         {
             Debug.Log("下派生");
         }
@@ -239,4 +246,11 @@ public class YagamiController : MonoBehaviour
             ExitGround = false;
         }
     }
+    //private void OnTriggerEnter(Collider hit)
+    //{
+    //    if (hit.g)
+    //    {
+
+    //    }
+    //}
 }
