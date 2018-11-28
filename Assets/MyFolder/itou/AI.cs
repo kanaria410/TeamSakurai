@@ -11,7 +11,7 @@ public class AI : MonoBehaviour
         END = 100;      //セミコロンを書くのがめんどくさかったので適当に大きな値を用意しました
     const int STATE_NUMBER = 10;    //本来はステート(状態)の数だけでいい　今は適当に１０
     int state;          //状態
-    int key;
+    int key;            //方向転換にKey
     int[] frameCount = new int[STATE_NUMBER];   //各ステート内で使う　フレームをカウントする
     [SerializeField]
     float speed;        //スピード（現在は加速度）
@@ -21,8 +21,6 @@ public class AI : MonoBehaviour
 
     //戦闘状態内で使っている変数
     bool attackFlag;
-
-    Renderer renderer;
 
     //アイドル
     void Idle()
@@ -135,8 +133,6 @@ public class AI : MonoBehaviour
         //プレイヤーをターゲットに指定
         target = GameObject.FindGameObjectWithTag("Player");
 
-        renderer = GetComponent<Renderer>();
-
         //初期化
         state = IDLE;
         attackFlag = false;
@@ -147,16 +143,6 @@ public class AI : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Return))
         {
             Debug.LogError("現在の状態：" + state);
-        }
-
-        if (Input.GetButton("Horizontal"))
-        {
-            Debug.LogError("(´･ω･｀)");
-        }
-
-        if (Input.GetKey(KeyCode.RightArrow))
-        {
-
         }
 
         //動く方向に応じて反転
