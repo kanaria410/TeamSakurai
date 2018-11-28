@@ -6,10 +6,10 @@ public class Player : MonoBehaviour
 {
     private int jumpcount;           //ジャンブした回数をカウント
     [SerializeField]
-    private Rigidbody rb;             //body獲得      
+    private Rigidbody rb;            //body獲得      
     public float jumpPower;          //ジャンプ力
     public float speed;              //移動スピード
-    int key;                          //方向転換に使う
+    int key;                         //方向転換に使う
 
     void Start()
     {
