@@ -62,6 +62,10 @@ public class Player : MonoBehaviour {
         {
             transform.position -= new Vector3(moveValueX, moveValueY, moveValueZ);
         }
+        if (Input.GetKey(KeyCode.W))
+        {
+            transform.position += new Vector3(0, 1, 0);
+        }
 
         if (Input.GetKey(KeyCode.Space))
         {

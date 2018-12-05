@@ -20,6 +20,59 @@ public class FloorPenetration : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        
+        if (Input.GetKeyDown(KeyCode.W))
+        {
+            //レイヤー名をJumpに変更
+            gameObject.layer = LayerMask.NameToLayer("Jump");
+            //時間を動かす
+            Behavior = true;
+        }
+        
+        if (Behavior == true)
+        {
+            //時間計測
+            BehaviorTime += Time.deltaTime;
+            //動いているかの確認
+            Debug.Log(BehaviorTime);
+        }
+
+        if (BehaviorTime >= 2)
+        {
+            //レイヤー名をNomalに変更
+            gameObject.layer = LayerMask.NameToLayer("Nomal");
+            //時間初期化
+            BehaviorTime = 0;
+            //時間を止める
+            Behavior = false;
+        }
+
+        
+        if (Input.GetKeyDown(KeyCode.S))
+        {
+            //レイヤー名をGetOffに変更
+            gameObject.layer = LayerMask.NameToLayer("GetOff");
+            //時間を動かす
+            Behavior = true;
+        }
+
+        if (Behavior == true)
+        {
+            //時間計測
+            BehaviorTime += Time.deltaTime;
+            //動いているかの確認
+            Debug.Log(BehaviorTime);
+        }
+
+        if (BehaviorTime >= 1)
+        {
+            //レイヤー名をNomalに変更
+            gameObject.layer = LayerMask.NameToLayer("Nomal");
+            //時間初期化
+            BehaviorTime = 0;
+            //時間を止める
+            Behavior = false;
+        }
         //if (Input.GetKeyDown(KeyCode.W))
         //{
         //    gameObject.layer = LayerMask.NameToLayer("Jump");
@@ -38,25 +91,6 @@ public class FloorPenetration : MonoBehaviour
         //    frame = 0;
         //    Behavior = false;
         //}
-        if (Input.GetKeyDown(KeyCode.W))
-        {
-            gameObject.layer = LayerMask.NameToLayer("Jump");
-            Behavior = true;
-        }
-
-        if (Behavior == true)
-        {
-            BehaviorTime += Time.deltaTime;
-            Debug.Log(BehaviorTime);
-        }
-
-        if (BehaviorTime >= 2)
-        {
-            gameObject.layer = LayerMask.NameToLayer("Nomal");
-            BehaviorTime = 0;
-            Behavior = false;
-        }
-
         //if (Input.GetKeyDown(KeyCode.W))
         //{
         //    Behavior = true;
@@ -75,21 +109,5 @@ public class FloorPenetration : MonoBehaviour
         //        //frame = 0;
         //    }
         //}
-        if (Input.GetKeyDown(KeyCode.S))
-        {
-            gameObject.layer = LayerMask.NameToLayer("GetOff");
-            Behavior = true;
-        }
-        if (Behavior == true)
-        {
-            BehaviorTime += Time.deltaTime;
-            Debug.Log(BehaviorTime);
-        }
-        if (BehaviorTime >= 1)
-        {
-            gameObject.layer = LayerMask.NameToLayer("Nomal");
-            BehaviorTime = 0;
-            Behavior = false;
-        }
     }
 }
