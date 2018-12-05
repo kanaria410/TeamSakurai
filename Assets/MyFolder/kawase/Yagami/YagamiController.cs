@@ -9,21 +9,24 @@ public class YagamiController : MonoBehaviour
     public float jumpPower;         //ジャンプ力
     public float speed;             //移動スピード
     private int jumpcount;          //ジャンブした回数をカウント
-    private Animator animetor;             //アニメーションを使うよ
-
-    int key;                        //方向転換に使う
-    int OffensivePower;             //プレイヤーの攻撃力？
-    int DefensePower;               //プレイヤーの防御力？
+    private Animator animetor;      //アニメーションを使うよ
 
     float jumpTime;                 //ジャンプする時間
     bool jumpOn;                    //ジャンプボタンが押されたか確認
-    bool Awakening;                 //覚醒スイッチ
-    Vector2 x;
+    Vector2 x1;                     //十字
+    Vector2 x2;                     //スティック
     public bool ExitGround { get; set; }
+    //地面から離れたとする距離
+    public float distanceToTheGround;
+    //着地アニメーションへ変わる地面からの距離
+    public float distanceToLanding;
+    //地面との距離を計るためにこの位置からレイを飛ばす
+    public Transform shoes;
 
     void Start()
     {
         animetor = GetComponent<Animator>();
+        shoes = GetComponent<Transform>();
     }
 
     void Jump()
@@ -52,30 +55,64 @@ public class YagamiController : MonoBehaviour
     
     void CharacterMove()
     {
-        ////キャラ移動
-        //if (Input.GetButton("right"))
-        //{
-        //    Debug.Log("ああああ");
-        //    rb.AddForce(Vector3.right * speed, ForceMode.Force);
-        //    key = 1;
-        //}
-
-        //if (Input.GetButton("left"))
-        //{
-        //    Debug.Log("aaaaa");
-        //    rb.AddForce(Vector3.left * speed, ForceMode.Force);
-        //    key = -1;
-        //}
+        if (ExitGround == false)
+        {
+            animetor.SetBool("isFall", false);
+        }
+        //　アニメーションパラメータFallがfalseの時で地面との距離が遠かったらFallをtrueにする
+        else if (!animetor.GetBool("isFall"))
+        {
+            Debug.DrawLine(shoes.position, shoes.position + Vector3.down * distanceToTheGround, Color.red);
+            if (!Physics.SphereCast(new Ray(shoes.position, Vector3.down), distanceToTheGround, LayerMask.GetMask("Field")))
+            {
+                animetor.SetBool("isFall", true);
+            }
+        }
+        //　落下アニメーションの時はレイを飛ばし着地アニメーションにする
+        else if (animetor.GetBool("isFall"))
+        {
+            Debug.Log("らっか");
+            Debug.DrawLine(shoes.position, shoes.position + Vector3.down * distanceToLanding, Color.green);
+            if (Physics.Linecast(shoes.position, shoes.position + Vector3.down * distanceToLanding, LayerMask.GetMask("Field")))
+            {
+                Debug.Log("せっち");
+                animetor.SetBool("isLanding", true);
+            }
+        }
         
         //十字キー
-        x = new Vector3(Input.GetAxis("Horizontal"), Vector3.zero.y);
-        rb.AddForce(x * speed, ForceMode.Force);
+        x1 = new Vector3(Input.GetAxis("Horizontal"), Vector3.zero.y);
+        rb.AddForce(x1 * speed, ForceMode.Force);
 
         //スティック
-        x = new Vector3(Input.GetAxis("Horizontal2"), Vector3.zero.y);
-        rb.AddForce(x * speed, ForceMode.Force);
+        x2 = new Vector3(Input.GetAxis("Horizontal2"), Vector3.zero.y);
+        rb.AddForce(x2 * speed, ForceMode.Force);
 
-        //ここら辺に回避
+         //十字操作
+        if (x1.magnitude > 0.1f)
+         {
+            animetor.SetFloat("speed", x1.magnitude);
+            transform.rotation = Quaternion.LookRotation(x1);
+            Debug.Log("aa");
+         }
+         else
+         {
+         animetor.SetFloat("speed", 0f);
+         }
+
+        //スティック操作
+        if (x2.magnitude > 0.1f)
+        {
+           animetor.SetFloat("speed", x2.magnitude);
+           transform.rotation = Quaternion.LookRotation(x2);
+           Debug.Log("aa");
+         }
+         else
+         {
+          animetor.SetFloat("speed", 0f);
+         }
+
+        //回避
         if (Input.GetButton("Avoidance"))
         {
             Debug.Log("(ﾟ∀ﾟ)");
@@ -246,11 +283,5 @@ public class YagamiController : MonoBehaviour
             ExitGround = false;
         }
     }
-    //private void OnTriggerEnter(Collider hit)
-    //{
-    //    if (hit.g)
-    //    {
 
-    //    }
-    //}
 }
