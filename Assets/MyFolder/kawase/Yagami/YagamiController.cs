@@ -71,7 +71,6 @@ public class YagamiController : MonoBehaviour
         //　落下アニメーションの時はレイを飛ばし着地アニメーションにする
         else if (animetor.GetBool("isFall"))
         {
-            Debug.Log("らっか");
             Debug.DrawLine(shoes.position, shoes.position + Vector3.down * distanceToLanding, Color.green);
             if (Physics.Linecast(shoes.position, shoes.position + Vector3.down * distanceToLanding, LayerMask.GetMask("Field")))
             {
