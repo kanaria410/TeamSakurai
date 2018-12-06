@@ -114,14 +114,12 @@ public class YagamiController : MonoBehaviour
         //回避
         if (Input.GetButton("Avoidance"))
         {
-            Debug.Log("(ﾟ∀ﾟ)");
         }
 
         //ガード
-        if (Input.GetButton("Guard"))
+        if (Input.GetButtonDown("Guard"))
         {
-            animetor.SetTrigger("GuardTrigger");
-            Debug.Log("( *´艸｀)");
+            animetor.SetBool("isGuard", true);
         }
         else
         {
