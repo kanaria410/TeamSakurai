@@ -39,10 +39,4 @@ public class SelectManager : MonoBehaviour
         //適当に初期化
         GameDate.Property_CharacterNumber = 100;
 	}
-	
-	// Update is called once per frame
-	void Update ()
-    {
-        
-	}
 }
