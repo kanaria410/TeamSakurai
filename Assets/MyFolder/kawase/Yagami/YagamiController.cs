@@ -13,9 +13,11 @@ public class YagamiController : MonoBehaviour
 
     float jumpTime;                 //ジャンプする時間
     bool jumpOn;                    //ジャンプボタンが押されたか確認
-    Vector2 x1;                     //十字
+    bool GuardOn;                   //Guard中かどうか
+    Vector3 x1;                     //十字x
     Vector2 x2;                     //スティック
     public bool ExitGround { get; set; }
+    
     //地面から離れたとする距離
     public float distanceToTheGround;
     //着地アニメーションへ変わる地面からの距離
@@ -31,7 +33,7 @@ public class YagamiController : MonoBehaviour
 
     void Jump()
     {
-        if (Input.GetButtonDown("Jump") && jumpcount < 2)
+        if (Input.GetButtonDown("Jump") && jumpcount < 1)
         {
             animetor.SetTrigger("JumpTrigger");
             rb.AddForce(new Vector3(0, jumpPower * 45f, 0));
@@ -68,48 +70,60 @@ public class YagamiController : MonoBehaviour
                 animetor.SetBool("isFall", true);
             }
         }
-        //　落下アニメーションの時はレイを飛ばし着地アニメーションにする
+        //　落下アニメーションの時はレイを飛ばし地面との距離が近かったら着地アニメーションにする
         else if (animetor.GetBool("isFall"))
         {
             Debug.DrawLine(shoes.position, shoes.position + Vector3.down * distanceToLanding, Color.green);
             if (Physics.Linecast(shoes.position, shoes.position + Vector3.down * distanceToLanding, LayerMask.GetMask("Field")))
             {
-                Debug.Log("せっち");
                 animetor.SetBool("isLanding", true);
             }
         }
-        
+
         //十字キー
         x1 = new Vector3(Input.GetAxis("Horizontal"), Vector3.zero.y);
         rb.AddForce(x1 * speed, ForceMode.Force);
 
-        //スティック
-        x2 = new Vector3(Input.GetAxis("Horizontal2"), Vector3.zero.y);
-        rb.AddForce(x2 * speed, ForceMode.Force);
+        ////スティック
+        //z1 = new Vector3(Input.GetAxis("Vertical"), Vector3.zero.y);
+        //rb.AddForce(x2 * speed, ForceMode.Force);
 
-         //十字操作
+        ////十字操作
         if (x1.magnitude > 0.1f)
-         {
+        {
             animetor.SetFloat("speed", x1.magnitude);
             transform.rotation = Quaternion.LookRotation(x1);
             Debug.Log("aa");
-         }
-         else
-         {
-         animetor.SetFloat("speed", 0f);
-         }
-
-        //スティック操作
-        if (x2.magnitude > 0.1f)
+        }
+        else
         {
-           animetor.SetFloat("speed", x2.magnitude);
-           transform.rotation = Quaternion.LookRotation(x2);
-           Debug.Log("aa");
-         }
-         else
-         {
-          animetor.SetFloat("speed", 0f);
-         }
+            animetor.SetFloat("speed", 0f);
+        }
+        ////十字操作
+        //if (z1 > 0.1f)
+        //{
+        //    animetor.SetFloat("speed", z);
+        //    transform.rotation = Quaternion.LookRotation(z1);
+        //    Debug.Log("aa");
+        //}
+        //else
+        //{
+        //    animetor.SetFloat("speed", 0f);
+        //}
+
+
+
+        ////スティック操作
+        //if (x2.magnitude > 0.1f)
+        //{
+        //   animetor.SetFloat("speed", x2.magnitude);
+        //   transform.rotation = Quaternion.LookRotation(x2);
+        //   Debug.Log("aa");
+        // }
+        // else
+        // {
+        //  animetor.SetFloat("speed", 0f);
+        // }
 
         //回避
         if (Input.GetButton("Avoidance"))
@@ -120,12 +134,14 @@ public class YagamiController : MonoBehaviour
         if (Input.GetButtonDown("Guard"))
         {
             animetor.SetBool("isGuard", true);
+            GuardOn = true;
         }
         else
         {
             if (Input.GetButtonUp("Guard"))
             {
                 animetor.SetBool("isGuard", false);
+                GuardOn = false;
             }
         }
 
@@ -140,25 +156,21 @@ public class YagamiController : MonoBehaviour
             if (Input.GetButtonDown("Punch1"))//□弱攻撃
             {
                 animetor.SetTrigger("WeakAttackTrigger");
-                Debug.Log("(´･ω･`)");
             }
 
             if (Input.GetButtonDown("Punch2"))//△強攻撃
             {
                 animetor.SetTrigger("StrongTrigger");
-                Debug.Log("(*´ω｀*)");
             }
 
             if (Input.GetButtonDown("Smash"))//〇スマッシュ
             {
                 animetor.SetTrigger("SmashTrigger");
-                Debug.Log("(#ﾟДﾟ)ｺﾞﾗｧ!!!!");
             }
         }
         //空中派生攻撃
         if (ExitGround == true)
         {
-            Debug.Log("あああああああああああ");
             //十字キー専用
             //空中左攻撃
             if (Input.GetButton("Punch1") && Input.GetAxis("Horizontal") > 0)
@@ -254,13 +266,14 @@ public class YagamiController : MonoBehaviour
         //派生下
         if (Input.GetButton("Deathblow") && Input.GetAxis("Vertical2") > 0)
         {
+            animetor.SetBool("isDownDB", true);
             Debug.Log("下派生");
         }
 
         //覚醒
         if (Input.GetButtonDown("Awakening"))
         {
-            Debug.Log("(｀・ω・´)");
+            animetor.SetBool("isAwakening", true);
         }
     }
 
