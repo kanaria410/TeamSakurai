@@ -19,6 +19,10 @@ public class CharacterController : MonoBehaviour {
     public float distanceToLanding;
     //地面との距離を計るためにこの位置からレイを飛ばす
     public Transform shoes;
+    //プレイヤーの飛ばす力
+    public float PlayerPower;
+
+    Rigidbody enemyrb;
 
     public Animator rootAnimator;
     AnimatorStateInfo animatorStateInfo;
@@ -31,33 +35,39 @@ public class CharacterController : MonoBehaviour {
             Debug.Log("初期化済み");
             ExitGround = false;
         }
-
+    }
+    private void OnTriggerEnter(Collider other)
+    {
         rootAnimator.Update(0);
         animatorStateInfo = rootAnimator.GetCurrentAnimatorStateInfo(0);
 
         if (other.gameObject.tag == "enemy")
         {
             Debug.Log("あ");
-            if ((animatorStateInfo.IsName("Weakattack3") || animatorStateInfo.IsName("Smash")) &&
-                0.0f < animatorStateInfo.normalizedTime && animatorStateInfo.normalizedTime < 0.9f)
+           enemyrb  = other.gameObject.GetComponent<Rigidbody>();
+            if (enemyrb)
             {
-                Rigidbody rigit = other.gameObject.GetComponent<Rigidbody>();
-                if (rigit)
+                if (animatorStateInfo.IsName("WeakAttack3"))
                 {
-                    if (animatorStateInfo.IsName("WeakAttack3"))
-                    {
-                        rigit.AddForce(transform.root.forward * 100, ForceMode.Impulse);
-                        Debug.Log("た");
-                    }
-                    else if (animatorStateInfo.IsName("Smash"))
-                    {
-                        rigit.AddForce(transform.root.forward * 100, ForceMode.Impulse);
-                        Debug.Log("る");
-                    }
+                    enemyrb.AddForce(transform.root.forward * PlayerPower, ForceMode.Impulse);
+                    Debug.Log("た");
                 }
+                else if (animatorStateInfo.IsName("Smash"))
+                {
+                    enemyrb.AddForce(transform.root.forward * PlayerPower, ForceMode.Impulse);
+                    Debug.Log("る");
+                }
+
+                else if (animatorStateInfo.IsName("StrongAttack"))
+                {
+                    enemyrb.AddForce(transform.root.forward * PlayerPower, ForceMode.Impulse);
+                }
+
             }
         }
     }
+    
+
 
 
     void Jump()
@@ -141,6 +151,7 @@ public class CharacterController : MonoBehaviour {
             if (Input.GetButtonDown("Smash"))//〇スマッシュ
             {
                 animetor.SetTrigger("SmashTrigger");
+                //enemyrb.AddForce(transform.root.forward * PlayerPower, ForceMode.Impulse);
             }
         }
 

@@ -2,28 +2,73 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class DController : MonoBehaviour {
-
-    public Rigidbody rb;            //body獲得
-    public float jumpPower;         //ジャンプ力
-    public float speed;             //移動スピード
-    private int jumpcount;          //ジャンブした回数をカウント
+public class DController : MonoBehaviour
+{
     private Animator animetor;      //アニメーションを使うよ
+    public float speed = 10.0f;
+    public Rigidbody rb;
+    float jumpTime;
+    private int jumpcount;
+    public float jumpPower;
+    private bool jumpOn;
+    private bool ExitGround;
 
-    float jumpTime;                 //ジャンプする時間
-    bool jumpOn;                    //ジャンプボタンが押されたか確認
-    Vector2 x1;                     //十字
-    Vector2 x2;                     //スティック
-    public bool ExitGround { get; set; }
+    //地面から離れたとする距離
+    public float distanceToTheGround;
+    //着地アニメーションへ変わる地面からの距離
+    public float distanceToLanding;
+    //地面との距離を計るためにこの位置からレイを飛ばす
+    public Transform shoes;
+    //プレイヤーの飛ばす力
+    public float PlayerPower;
 
-    void Start()
+    public Animator rootAnimator;
+    AnimatorStateInfo animatorStateInfo;
+
+    private void OnCollisionEnter(Collision other)
     {
-        animetor = GetComponent<Animator>();
+        if (other.gameObject.tag == "ground")
+        {
+            jumpcount = 0;
+            Debug.Log("初期化済み");
+            ExitGround = false;
+        }
+    }
+    private void OnTriggerEnter(Collider other)
+    {
+        rootAnimator.Update(0);
+        animatorStateInfo = rootAnimator.GetCurrentAnimatorStateInfo(0);
+
+        if (other.gameObject.tag == "enemy")
+        {
+            Debug.Log("あ");
+            Rigidbody rigit = other.gameObject.GetComponent<Rigidbody>();
+            if (rigit)
+            {
+                if (animatorStateInfo.IsName("WeakAttack3"))
+                {
+                    rigit.AddForce(transform.root.forward * PlayerPower, ForceMode.Impulse);
+                    Debug.Log("た");
+                }
+                else if (animatorStateInfo.IsName("Smash"))
+                {
+                    rigit.AddForce(transform.root.forward * PlayerPower, ForceMode.Impulse);
+                    Debug.Log("る");
+                }
+
+                else if (animatorStateInfo.IsName("StrongAttack"))
+                {
+                    rigit.AddForce(transform.root.forward * PlayerPower, ForceMode.Impulse);
+                }
+
+            }
+        }
+
     }
 
     void Jump()
     {
-        if (Input.GetButtonDown("Jump") && jumpcount < 2)
+        if (Input.GetButtonDown("Jump") && jumpcount < 1)
         {
             animetor.SetTrigger("JumpTrigger");
             rb.AddForce(new Vector3(0, jumpPower * 45f, 0));
@@ -43,65 +88,48 @@ public class DController : MonoBehaviour {
             jumpTime = 0f;//タイムの初期化
         }
     }
-
-
-    void CharacterMove()
+    void PlayerMove()
     {
-        //十字キー
-        x1 = new Vector3(Input.GetAxis("Horizontal"), Vector3.zero.y);
-        rb.AddForce(x1 * speed, ForceMode.Force);
+        //ここから一つ目のif文までがUnityちゃんが移動する方向に向く処理
+        Vector3 cameraForward = Vector3.Scale(Camera.main.transform.forward, new Vector3(1, 0, 1)).normalized;
+        Vector3 direction = cameraForward * Input.GetAxis("Vertical") +
+                Camera.main.transform.right * Input.GetAxis("Horizontal");
 
-        //スティック
-        x2 = new Vector3(Input.GetAxis("Horizontal2"), Vector3.zero.y);
-        rb.AddForce(x2 * speed, ForceMode.Force);
-
-        if (x1.magnitude > 0.1f)
+        if (direction.magnitude > 0.01f) //ベクトルの長さが0.01fより大きい場合にプレイヤーの向きを変える処理を入れる(0では入れないので）
         {
-            animetor.SetFloat("speed", x1.magnitude);
-            transform.rotation = Quaternion.LookRotation(x1);
-            Debug.Log("aa");
+            animetor.SetFloat("speed", direction.magnitude);
+            transform.rotation = Quaternion.LookRotation(direction);  //ベクトルの情報をQuaternion.LookRotationに引き渡し回転量を取得しプレイヤーを回転させる
         }
         else
         {
             animetor.SetFloat("speed", 0f);
         }
 
-
-        if (x2.magnitude > 0.1f)
-        {
-            animetor.SetFloat("speed", x2.magnitude);
-            transform.rotation = Quaternion.LookRotation(x2);
-            Debug.Log("aa");
-        }
-        else
-        {
-            animetor.SetFloat("speed", 0f);
-        }
-
-        //ここら辺に回避
-        if (Input.GetButton("Avoidance"))
-        {
-            Debug.Log("(ﾟ∀ﾟ)");
-        }
-
-        //ガード
-        if (Input.GetButton("Guard"))
-        {
-            animetor.SetTrigger("GuardTrigger");
-            Debug.Log("( *´艸｀)");
-        }
-        else
-        {
-            if (Input.GetButtonUp("Guard"))
-            {
-                animetor.SetBool("isGuard", false);
-            }
-        }
+        //if (ExitGround == false)
+        //{
+        //    animetor.SetBool("isFall", false);
+        //}
+        ////　アニメーションパラメータFallがfalseの時で地面との距離が遠かったらFallをtrueにする
+        //else if (!animetor.GetBool("isFall"))
+        //{
+        //    Debug.DrawLine(shoes.position, shoes.position + Vector3.down * distanceToTheGround, Color.red);
+        //    if (!Physics.SphereCast(new Ray(shoes.position, Vector3.down), distanceToTheGround, LayerMask.GetMask("Field")))
+        //    {
+        //        animetor.SetBool("isFall", true);
+        //    }
+        //}
+        ////　落下アニメーションの時はレイを飛ばし地面との距離が近かったら着地アニメーションにする
+        //else if (animetor.GetBool("isFall"))
+        //{
+        //    Debug.DrawLine(shoes.position, shoes.position + Vector3.down * distanceToLanding, Color.green);
+        //    if (Physics.Linecast(shoes.position, shoes.position + Vector3.down * distanceToLanding, LayerMask.GetMask("Field")))
+        //    {
+        //        animetor.SetBool("isLanding", true);
+        //    }
+        //}
 
     }
-
-
-    void CharacterAttack()
+    void PlayerAttack()
     {
         if (ExitGround == false)
         {
@@ -109,145 +137,43 @@ public class DController : MonoBehaviour {
             if (Input.GetButtonDown("Punch1"))//□弱攻撃
             {
                 animetor.SetTrigger("WeakAttackTrigger");
-                Debug.Log("(´･ω･`)");
             }
 
             if (Input.GetButtonDown("Punch2"))//△強攻撃
             {
                 animetor.SetTrigger("StrongTrigger");
-                Debug.Log("(*´ω｀*)");
             }
 
             if (Input.GetButtonDown("Smash"))//〇スマッシュ
             {
                 animetor.SetTrigger("SmashTrigger");
-                Debug.Log("(#ﾟДﾟ)ｺﾞﾗｧ!!!!");
             }
         }
-        //空中派生攻撃
-        if (ExitGround == true)
-        {
-            Debug.Log("あああああああああああ");
-            //十字キー専用
-            //空中左攻撃
-            if (Input.GetButton("Punch1") && Input.GetAxis("Horizontal") > 0)
-            {
-                animetor.SetTrigger("LeftAttackTrigger");
-            }
 
-            //空中右攻撃
-            if (Input.GetButton("Punch1") && Input.GetAxis("Horizontal") < 0)
-            {
-                animetor.SetTrigger("RightAttackTrigger");
-            }
-
-            //空中上攻撃
-            if (Input.GetButton("Punch1") && Input.GetAxis("Vertical") > 0)
-            {
-                animetor.SetTrigger("UpAttackTrigger");
-            }
-
-            //空中下攻撃
-            if (Input.GetButton("Punch1") && Input.GetAxis("Vertical") < 0)
-            {
-                animetor.SetTrigger("DownAttackTrigger");
-            }
-
-            //スティック専用
-            //空中左攻撃
-            if (Input.GetButton("Punch1") && Input.GetAxis("Horizontal2") > 0)
-            {
-                animetor.SetTrigger("LeftAttackTrigger");
-            }
-
-            //空中右攻撃
-            if (Input.GetButton("Punch1") && Input.GetAxis("Horizontal2") < 0)
-            {
-                animetor.SetTrigger("RightAttackTrigger");
-            }
-
-            //空中上攻撃
-            if (Input.GetButton("Punch1") && Input.GetAxis("Vertical2") < 0)
-            {
-                animetor.SetTrigger("UpAttackTrigger");
-            }
-
-            //空中下攻撃
-            if (Input.GetButton("Punch1") && Input.GetAxis("Vertical2") > 0)
-            {
-                animetor.SetTrigger("DownAttackTrigger");
-            }
-        }
-        //必殺技
-        if (Input.GetButtonDown("Deathblow"))
-        {
-            Debug.Log("Neutral");
-        }
-
-        //十字キー専用
-        //派生左右
-        if ((Input.GetButton("Deathblow") && Input.GetAxis("Horizontal") > 0)
-         || Input.GetButton("Deathblow") && Input.GetAxis("Horizontal") < 0)
-        {
-            Debug.Log("左右派生");
-        }
-
-        //派生上
-        if (Input.GetButton("Deathblow") && Input.GetAxis("Vertical") > 0)
-        {
-            Debug.Log("上派生");
-
-        }
-
-        //派生下
-        if (Input.GetButton("Deathblow") && Input.GetAxis("Vertical") < 0)
-        {
-            Debug.Log("下派生");
-        }
-
-        //スティック専用
-        //派生左右
-        if ((Input.GetButton("Deathblow") && Input.GetAxis("Horizontal2") > 0)
-         || Input.GetButton("Deathblow") && Input.GetAxis("Horizontal2") < 0)
-        {
-            Debug.Log("左右派生");
-        }
-
-        //派生上
-        if (Input.GetButton("Deathblow") && Input.GetAxis("Vertical2") < 0)
-        {
-            Debug.Log("上派生");
-
-        }
-
-        //派生下
-        if (Input.GetButton("Deathblow") && Input.GetAxis("Vertical2") > 0)
-        {
-            Debug.Log("下派生");
-        }
-
-        //覚醒
-        if (Input.GetButtonDown("Awakening"))
-        {
-            Debug.Log("(｀・ω・´)");
-        }
     }
+    void Start()
+    {
+        animetor = GetComponent<Animator>();
+        rb = GetComponent<Rigidbody>();
+        shoes = GetComponent<Transform>();
+
+    }
+
 
     void Update()
     {
-        CharacterMove();
-        Jump();
-        CharacterAttack();
+        //Jump();
+        PlayerMove();
+        PlayerAttack();
     }
 
-    private void OnCollisionEnter(Collision collision)
+    void FixedUpdate()
     {
-        if (collision.gameObject.tag == "ground")
-        {
-            jumpcount = 0;
-            Debug.Log("初期化済み");
-            ExitGround = false;
-        }
+        float x = Input.GetAxis("Horizontal") * speed;
+        float z = Input.GetAxis("Vertical") * speed;
+        rb.AddForce(x, 0, z);
     }
+
+
 
 }
