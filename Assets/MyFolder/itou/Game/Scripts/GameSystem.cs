@@ -39,7 +39,6 @@ public class GameSystem : MonoBehaviour
         {
             _timerText.text = "GO!";
             GlobalDate._STOP_FLAG = false;
-            
         }
         else if (timer > -1.0)
         {
